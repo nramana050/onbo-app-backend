@@ -1,28 +1,28 @@
-name: Deploy Node.js App
+name: Deploy Application
 
 on:
   push:
-    branches: [main]  # Trigger on pushes to the main branch
+    branches:
+      - main
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest  # Use a hosted runner
-
+  deploy:
+    runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v3  # Checkout the repository
-      - uses: actions/setup-node@v3  # Set up Node.js environment
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      - name: Install dependencies
+        run: npm install   # Adjust this command based on your application's dependencies
+      
+      - name: Build application
+        run: npm run build  # Adjust this command based on your build process
+
+      - name: Deploy to EC2 instance
+        uses: easingthemes/deploy-ec2@v2
         with:
-          node-version: 16  # Specify Node.js version
-      - run: npm install  # Install dependencies
-      - run: npm test  # Run tests (optional)
-      - run: npm run build  # Build the application
-      - uses: appleboy/ssh-action@master  # Deploy to server (replace with your preferred deployment method)
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd /path/to/deploy/directory
-            git pull origin main
-            npm install
-            npm start  # Or your command to start the application
+          key: ${{ secrets.EC2_SSH_KEY }}  # Add your SSH key as a secret in your repository
+          user: ubuntu  # Adjust the username based on your EC2 instance configuration
+          host: ${{ secrets.EC2_HOST }}    # Add your EC2 instance IP or hostname as a secret
+          path: /path/to/deploy   # Specify the path where you want to deploy your application on the EC2 instance
