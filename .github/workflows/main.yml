@@ -1,33 +1,28 @@
-name: Deploy to EC2
+name: Deploy Node.js App
 
 on:
   push:
-    branches:
-      - main  # Change this to your main branch name
-  # Trigger deployment on new releases (optional)
-  release:
-    types: [created]
+    branches: [main]  # Trigger on pushes to the main branch
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  build-and-deploy:
+    runs-on: ubuntu-latest  # Use a hosted runner
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Install dependencies and build
-        run: |
-          npm install  # Or your preferred package manager command
-          npm start # Or your build command
-
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@master
+      - uses: actions/checkout@v3  # Checkout the repository
+      - uses: actions/setup-node@v3  # Set up Node.js environment
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          node-version: 16  # Specify Node.js version
+      - run: npm install  # Install dependencies
+      - run: npm test  # Run tests (optional)
+      - run: npm run build  # Build the application
+      - uses: appleboy/ssh-action@master  # Deploy to server (replace with your preferred deployment method)
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /path/to/your/application
-            git pull origin main  # Or your main branch name
-            # Additional deployment steps (e.g., restarting server, running migrations)
+            cd /path/to/deploy/directory
+            git pull origin main
+            npm install
+            npm start  # Or your command to start the application
