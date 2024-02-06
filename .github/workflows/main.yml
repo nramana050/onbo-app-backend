@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies and build
         run: |
           npm install  # Or your preferred package manager command
-          npm run build  # Or your build command
+          npm start # Or your build command
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
