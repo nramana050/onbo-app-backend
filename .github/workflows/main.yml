@@ -1,31 +1,33 @@
-name: Node.js CI/CD
+name: Deploy to EC2
 
 on:
   push:
     branches:
-      - main
+      - main  # Change this to your main branch name
+  # Trigger deployment on new releases (optional)
+  release:
+    types: [created]
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm install
-
-
-      - name: Deploy to production
-        env:
-          NODE_ENV: production
-          API_KEY: ${{ secrets.API_KEY }}
+      - name: Install dependencies and build
         run: |
-          npm run build
-          npm run deploy
+          npm install  # Or your preferred package manager command
+          npm run build  # Or your build command
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /path/to/your/application
+            git pull origin main  # Or your main branch name
+            # Additional deployment steps (e.g., restarting server, running migrations)
